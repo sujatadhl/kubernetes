@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-state
+  labels: 
+    name: db-state
+    app: python-app
+spec:
+  serviceName: db
+  replicas: 1
+  selector: 
+    matchLabels:
+      name: db-pod
+      app: python-app
+  template:
+    metadata:
+      name: db
+      labels:
+        name: db-pod
+        app: python-app
+    spec: 
+      containers:
+        - name: db
+          image: localhost:5000/db:latest
+          ports:
+            - containerPort: 3306
+          env: 
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dbsecret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dbsecret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: myapp
+                  key: MYSQL_DATABASE
+            - name: MYSQL_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: myapp
+                  key: MYSQL_USER
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mount
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2"
+  volumeClaimTemplates:  
+    - metadata:
+        name: mount
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: "1Gi"
