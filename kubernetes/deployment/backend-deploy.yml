@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deploy
+  labels: 
+    name: api-deploy
+    app: python-app
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      name: api-pod
+      app: python-app
+  template:
+    metadata:
+      name: api-pod
+      labels:
+        name: api-pod
+        app: python-app
+    spec: 
+      containers:
+        - name: api
+          image: localhost:5000/quotes-api:latest
+          ports:
+            - containerPort: 5001
+          env: 
+            - name:  MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dbsecret
+                  key: MYSQL_ROOT_PASSWORD
+            - name:  MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dbsecret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_DATABASE
+              value: quotesdb
+            - name: MYSQL_USER
+              value: user
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+            
