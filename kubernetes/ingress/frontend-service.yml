@@ -7,7 +7,6 @@ spec:
   selector:
     name: app-pod
     app: python-app
-  type: NodePort
   ports:
   - port: 5002
     targetPort: 5002
