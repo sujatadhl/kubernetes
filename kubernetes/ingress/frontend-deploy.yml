@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deploy
+  namespace: ingress-testing
+  labels: 
+    name: app-deploy
+    app: python-app
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      name: app-pod
+      app: python-app
+  template:
+    metadata:
+      name: app
+      labels:
+        name: app-pod
+        app: python-app
+    spec: 
+      containers:
+        - name: app
+          image: localhost:5000/quotes-app:latest
+          ports:
+            - containerPort: 5002
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
