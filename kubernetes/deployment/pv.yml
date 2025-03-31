@@ -7,7 +7,6 @@ spec:
     storage: 5Gi
   accessModes:
     - ReadWriteOnce
-  storageClassName: manual
   hostPath:
     path: /home/sujata/kubernetes/three-tier-web-app/mysql
     type: DirectoryOrCreate
@@ -21,6 +20,5 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  storageClassName: manual
   accessModes:
     - ReadWriteOnce
