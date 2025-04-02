@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ .Chart.Name }}"
+  labels:
+    {{- with .Values.deployLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end}}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 6 }}
+        {{- end }}
+  template:
+    metadata:
+      name: {{ .Chart.Name }}
+      labels:
+        {{- include "db.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: api-config
+                  key: MYSQL_USER
+            - name: MYSQL_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: api-config
+                  key: MYSQL_DB               
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-secret
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-secret
+                  key: MYSQL_ROOT_PASSWORD
+          volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: db-vol
+  volumeClaimTemplates:  
+  - metadata:
+      name: db-vol
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: "1Gi"
