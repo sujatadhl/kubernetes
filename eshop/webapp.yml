@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: localhost:5000/webapp:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: CallBackUrl
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: WebAppClient      
+        - name: HTTP_PORTS
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  HTTP_PORTS 
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        - name: IdentityUrl
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: identity_url
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: ConnectionStrings__eventbus
+        - name: services__basket-api__http__0
+          value: "http://basket-api.default.svc.cluster.local"
+        - name: services__basket-api__https__0
+          value: "https://basket-api.default.svc.cluster.local"
+        - name: services__catalog-api__http__0
+          value: "http://catalog-api.default.svc.cluster.local"
+        - name: services__catalog-api__https__0
+          value: "https://catalog-api.default.svc.cluster.local"
+        - name: services__ordering-api__http__0
+          value: "http://ordering-api.default.svc.cluster.local"
+        - name: services__ordering-api__https__0
+          value: "https://ordering-api.default.svc.cluster.local"
+        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+        #   value: "/etc/dataprotection/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp
+spec:
+  selector:
+    app: webapp
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30004
+  type: NodePort
+

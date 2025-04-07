@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-api
+  template:
+    metadata:
+      labels:
+        app: identity-api
+    spec:
+      containers:
+      - name: identity-api
+        image: localhost:5000/identity-api:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ConnectionStrings__identitydb
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: ConnectionStrings__identitydb
+        - name: HTTP_PORTS
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: HTTP_PORTS
+        - name: BasketApiClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: BasketApiClient
+        - name: OrderingApiClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: OrderingApiClient
+        - name: WebAppClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: WebAppClient
+        - name: WebhooksApiClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: WebhooksApiClient
+        - name: WebhooksWebClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: WebhooksWebClient
+        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+        #   value: "/etc/dataprotection/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-api
+spec:
+  selector:
+    app: identity-api
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30005
+  type: NodePort

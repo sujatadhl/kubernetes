@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordering-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordering-api
+  template:
+    metadata:
+      labels:
+        app: ordering-api
+    spec:
+      containers:
+      - name: ordering-api
+        image: dahalsujata52897/ordering-api:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ConnectionStrings__eventbus
+          valueFrom:
+            configMapKeyRef:
+              name: all-env
+              key: ConnectionStrings__eventbus
+        - name: ConnectionStrings__orderingdb
+          valueFrom:
+            configMapKeyRef:
+              name: all-env
+              key: ConnectionStrings__orderingdb
+        - name: Identity__Url
+          valueFrom:
+            configMapKeyRef:
+              name: all-env
+              key: identity_url
+        - name: HTTP_PORTS
+          valueFrom:
+            configMapKeyRef:
+              name: all-env
+              key: HTTP_PORTS
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: all-env
+              key: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+        #   value: "/etc/dataprotection/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ordering-api
+spec:
+  selector:
+    app: ordering-api
+  ports:
+  - port: 80
+    targetPort: 8080

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: all-env
+data:
+  identity_url: http://identity-api.default.svc.cluster.local
+  HTTP_PORTS: "8080"
+  ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+  ConnectionStrings__eventbus: amqp://sujata:YJr23N850SJBBqn9UUrXnE@eventbus:5672
+  ConnectionStrings__redis: redis://redis:6379
+  ConnectionStrings__catalogdb: Host=db;Port=5432;Username=postgres;Password=Testtest#111;Database=catalogdb
+  ConnectionStrings__orderingdb: Host=db;Port=5432;Username=postgres;Password=Testtest#111;Database=orderingdb
+  ConnectionStrings__webhooksdb: Host=db;Port=5432;Username=postgres;Password=Testtest#111;Database=webhooksdb
+  ConnectionStrings__identitydb: Host=db;Port=5432;Username=postgres;Password=Testtest#111;Database=identitydb
+  init.sql: |
+    CREATE DATABASE orderingdb;
+    CREATE DATABASE catalogdb;
+    CREATE DATABASE identitydb;
+    CREATE DATABASE webhooksdb;
+  BasketApiClient: http://basket-api.default.svc.cluster.local
+  OrderingApiClient: http://ordering-api.default.svc.cluster.local
+  WebAppClient: http://webapp.default.svc.cluster.local
+  WebhooksApiClient: http://webhooks-api.default.svc.cluster.local
+  WebhooksWebClient: http://webhooks-client.default.svc.cluster.local
+
+

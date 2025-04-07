@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook-client
+spec:
+  selector:
+    matchLabels:
+      app: webhook-client
+  template:
+    metadata:
+      labels:
+        app: webhook-client
+    spec:
+      containers:
+      - name: webhook-client
+        image: localhost:5000/webhook-client:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env: 
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ConnectionStrings__eventbus
+        - name: ConnectionStrings__webhooksdb
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ConnectionStrings__webhooksdb
+        - name: IdentityUrl
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  identity_url    
+        - name: CallBackUrl
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  WebhooksApiClient       
+        - name: HTTP_PORTS
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  HTTP_PORTS 
+        - name: services__webhooks-api__http__0
+          value: "http://webhooks-api.default.svc.cluster.local" 
+        - name: services__webhooks-api__https__0
+          value: "https://webhooks-api.default.svc.cluster.local"   
+        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+        #   value: "/etc/dataprotection/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-client
+spec:
+  selector:
+    app: webhook-client
+  ports:
+  - port: 80
+    targetPort: 8080

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-processor
+spec:
+  selector:
+    matchLabels:
+      app: payment-processor
+  template:
+    metadata:
+      labels:
+        app: payment-processor
+    spec:
+      containers:
+      - name: payment-processor
+        image: localhost:5000/paymentprocessor:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ConnectionStrings__eventbus
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        - name: HTTP_PORTS
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  HTTP_PORTS   
+        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+        #   value: "/etc/dataprotection/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-processor
+spec:
+  selector:
+    app: payment-processor
+  ports:
+  - port: 80
+    targetPort: 8080

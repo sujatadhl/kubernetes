@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhooks-api
+spec:
+  selector:
+    matchLabels:
+      app: webhooks-api
+  template:
+    metadata:
+      labels:
+        app: webhooks-api
+    spec:
+      containers:
+      - name: webhooks-api
+        image: localhost:5000/webhooks-api:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: HTTP_PORTS
+          value: "8080"
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          value: "true"
+        - name: CallBackUrl
+          value: "http://webhooksclient.default.svc.cluster.local"
+        - name: IdentityUrl
+          value: "https://identity-api.default.svc.cluster.local"  # Update the service name for identity-api
+        - name: services__webhooks-api__http__0
+          value: "http://webhooks-api.default.svc.cluster.local"  # Reference Kubernetes service name for webhooks-api
+        - name: services__webhooks-api__https__0
+          value: "https://webhooks-api.default.svc.cluster.local"  
+        - name: ConnectionStrings__webhooksdb
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: ConnectionStrings__webhooksdb         
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: ConnectionStrings__eventbus
+        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+        #   value: "/etc/dataprotection/"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhooks-api
+spec:
+  selector:
+    app: webhooks-api
+  ports:
+  - port: 80
+    targetPort: 8080
